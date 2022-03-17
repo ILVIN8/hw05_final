@@ -1,0 +1,57 @@
+{% load static %}
+  <nav class="navbar navbar-light" style="background-color: lightskyblue">
+    <div class="container">
+      <a class="navbar-brand" href="{% url 'posts:index' %}">
+        <img src="{% static 'img/logo.png' %}" width="30" height="30" class="d-inline-block align-top" alt="">
+        <span style="color:red">Ya</span>tube
+      </a>
+      {% comment %}
+      Меню - список пунктов со стандартными классами Bootsrap.
+      Класс nav-pills нужен для выделения активных пунктов 
+      {% endcomment %}
+      <ul class="nav nav-pills">
+        {% with request.resolver_match.view_name as author %}
+        <li class="nav-item"> 
+          <a class="nav-link {% if author  == 'about:author' %}active{% endif %}" href="{% url 'about:author' %}">Об авторе</a>
+        </li>
+        {% endwith %}
+        {% with request.resolver_match.view_name as tech %}
+        <li class="nav-item">
+          <a class="nav-link {% if tech  == 'about:tech' %}active{% endif %}" href="{% url 'about:tech' %}">Технологии</a>
+        </li>
+        {% endwith %}
+        {% if request.user.is_authenticated %}
+        {% with request.resolver_match.view_name as post_create %}
+        <li class="nav-item"> 
+          <a class="nav-link {% if post_create  == 'posts:post_create' %}active{% endif %}" href="{% url 'posts:post_create' %}">Новая запись</a>
+        </li>
+        {% endwith %}
+        {% with request.resolver_match.view_name as password_change %}
+        <li class="nav-item"> 
+          <a class="nav-link {% if password_change  == 'users:password_change' %}active{% endif %} link-light" href="{% url 'users:password_change' %}">Изменить пароль</a>
+        </li>
+        {% endwith %}
+        {% with request.resolver_match.view_name as logout %}
+        <li class="nav-item"> 
+          <a class="nav-link {% if logout  == 'users:logout' %}active{% endif %} link-light" href="{% url 'users:logout' %}">Выйти</a>
+        </li>
+        {% endwith %}
+        <li>
+          Пользователь: {{ user.username }}
+        <li>
+        {% else %}
+        {% with request.resolver_match.view_name as login %}
+        <li class="nav-item"> 
+          <a class="nav-link {% if login  == 'login' %}active{% endif %} link-light" href="{% url 'login' %}">Войти</a>
+        </li>
+        {% endwith %}
+        {% with request.resolver_match.view_name as signup %}
+        <li class="nav-item"> 
+          <a class="nav-link {% if signup  == 'users:signup' %}active{% endif %} link-light" href="{% url 'users:signup' %}">Регистрация</a>
+        </li>
+        {% endwith %}
+        {% endif %}
+      </ul>
+      {# Конец добавленого в спринте #}
+    </div>
+  </nav>
