@@ -46,9 +46,10 @@ def profile(request, username):
     post_count = post_list.count()
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    following = not request.user.is_anonymous and author.following.filter(
-        user=request.user, author=author
-    ).exists()
+    following = (
+        not request.user.is_anonymous
+        and author.following.filter(user=user, author=author).exists()
+    )
     context = {
         "page_obj": page_obj,
         "title": f"Профайл пользователя {username}",
@@ -66,7 +67,9 @@ def post_detail(request, post_id):
     title = post.text[0:29]
     post_count = Post.objects.filter(author=post.author).count()
     comments = Comment.objects.filter(post_id=post_id)
-    form = CommentForm(request.POST or None,)
+    form = CommentForm(
+        request.POST or None,
+    )
     context = {
         "post": post,
         "title": f"Пост {title}",
@@ -122,14 +125,14 @@ def post_edit(request, post_id):
 
 @login_required
 def add_comment(request, post_id):
-    post = Post.objects.get(pk=post_id) 
+    post = Post.objects.get(pk=post_id)
     form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
         comment.author = request.user
         comment.post = post
         comment.save()
-    return redirect('posts:post_detail', post_id=post_id)
+    return redirect("posts:post_detail", post_id=post_id)
 
 
 @login_required
@@ -149,15 +152,17 @@ def follow_index(request):
     }
     return render(request, template, context)
 
+
 @login_required
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
     if request.user != author:
         Follow.objects.get_or_create(user=request.user, author=author)
-    return redirect('posts:follow_index')
+    return redirect("posts:follow_index")
+
 
 @login_required
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
     Follow.objects.filter(user=request.user, author=author).delete()
-    return redirect('posts:follow_index')
+    return redirect("posts:follow_index")

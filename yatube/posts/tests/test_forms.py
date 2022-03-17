@@ -53,18 +53,16 @@ class PostCreateFormTests(TestCase):
     def test_create_post(self):
         """Валидная форма создает запись Post."""
         posts_count = Post.objects.count()
-        small_gif = (            
-             b'\x47\x49\x46\x38\x39\x61\x02\x00'
-             b'\x01\x00\x80\x00\x00\x00\x00\x00'
-             b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-             b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-             b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-             b'\x0A\x00\x3B'
+        small_gif = (
+            b"\x47\x49\x46\x38\x39\x61\x02\x00"
+            b"\x01\x00\x80\x00\x00\x00\x00\x00"
+            b"\xFF\xFF\xFF\x21\xF9\x04\x00\x00"
+            b"\x00\x00\x00\x2C\x00\x00\x00\x00"
+            b"\x02\x00\x01\x00\x00\x02\x02\x0C"
+            b"\x0A\x00\x3B"
         )
         uploaded = SimpleUploadedFile(
-            name='small.gif',
-            content=small_gif,
-            content_type='image/gif'
+            name="small.gif", content=small_gif, content_type="image/gif"
         )
         form_data = {
             "text": "Тестовый текст",
@@ -82,7 +80,7 @@ class PostCreateFormTests(TestCase):
             Post.objects.filter(
                 author=author,
                 text="Тестовый текст",
-                image='posts/small.gif',
+                image="posts/small.gif",
             ).exists()
         )
 
@@ -116,11 +114,15 @@ class PostCreateFormTests(TestCase):
             "text": "Тестовый комментарий, который не будет опубликован",
         }
         response = self.guest_client.post(
-            reverse("posts:add_comment", kwargs={"post_id": 1}), data=form_data, follow=True
+            reverse("posts:add_comment", kwargs={"post_id": 1}),
+            data=form_data,
+            follow=True,
         )
+        login_url = reverse("users:login")
+        add_comment_url = reverse("posts:add_comment", kwargs={"post_id": 1})
         self.assertRedirects(
             response,
-            f'{reverse("users:login")}?next={reverse("posts:add_comment", kwargs={"post_id": 1})}',
+            f'{login_url}?next={add_comment_url}',
             status_code=302,
         )
         self.assertEqual(Comment.objects.count(), comment_count)
@@ -133,7 +135,9 @@ class PostCreateFormTests(TestCase):
             "author": self.user,
         }
         response = self.authorized_client.post(
-            reverse("posts:add_comment", kwargs={"post_id": 1}), data=form_data, follow=True
+            reverse("posts:add_comment", kwargs={"post_id": 1}),
+            data=form_data,
+            follow=True,
         )
         self.assertRedirects(
             response, reverse("posts:post_detail", kwargs={"post_id": 1})

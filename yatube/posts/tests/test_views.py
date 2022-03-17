@@ -8,7 +8,7 @@ from django.urls import reverse
 from django import forms
 from django.core.cache import cache
 
-from ..models import Post, Group, Follow
+from ..models import Post, Group
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 User = get_user_model()
@@ -31,13 +31,13 @@ class TaskPagesTests(TestCase):
             description="Тестовое описание группы 2",
         )
         cls.posts = []
-        small_gif = (            
-             b'\x47\x49\x46\x38\x39\x61\x02\x00'
-             b'\x01\x00\x80\x00\x00\x00\x00\x00'
-             b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-             b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-             b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-             b'\x0A\x00\x3B'
+        small_gif = (
+            b"\x47\x49\x46\x38\x39\x61\x02\x00"
+            b"\x01\x00\x80\x00\x00\x00\x00\x00"
+            b"\xFF\xFF\xFF\x21\xF9\x04\x00\x00"
+            b"\x00\x00\x00\x2C\x00\x00\x00\x00"
+            b"\x02\x00\x01\x00\x00\x02\x02\x0C"
+            b"\x0A\x00\x3B"
         )
         for i in range(13):
             cls.posts.append(
@@ -46,21 +46,22 @@ class TaskPagesTests(TestCase):
                     text=f"Тестовый текст поста {i}",
                     group=cls.group,
                     image=SimpleUploadedFile(
-                        name=f'small_{i}.gif',
+                        name=f"small_{i}.gif",
                         content=small_gif,
-                        content_type='image/gif',
-                    )
+                        content_type="image/gif",
+                    ),
                 )
             )
         cls.post_2 = Post.objects.create(
-                    author=cls.user,
-                    text=f"Тестовый текст уникального поста",
-                    group=cls.group,
-                    image=SimpleUploadedFile(
-                        name=f'small_uniq.gif',
-                        content=small_gif,
-                        content_type='image/gif',
-                    ))
+            author=cls.user,
+            text="Тестовый текст уникального поста",
+            group=cls.group,
+            image=SimpleUploadedFile(
+                name="small_uniq.gif",
+                content=small_gif,
+                content_type="image/gif",
+            ),
+        )
         cls.post = Post.objects.get(id=1)
         cls.index_url = (reverse("posts:index"), "posts/index.html")
         cls.group_url = (
@@ -87,15 +88,23 @@ class TaskPagesTests(TestCase):
             reverse("posts:post_edit", kwargs={"post_id": cls.post.id}),
             "posts/create_post.html",
         )
-        cls.follow_index_url = (reverse("posts:follow_index"), "posts/follow.html")
+        cls.follow_index_url = (
+            reverse("posts:follow_index"),
+            "posts/follow.html",
+        )
         cls.follow_url = (
-            reverse("posts:profile_follow", kwargs={"username": cls.user.username}),
-            "posts/profile.html"
-            )
+            reverse(
+                "posts:profile_follow", kwargs={"username": cls.user.username}
+            ),
+            "posts/profile.html",
+        )
         cls.unfollow_url = (
-            reverse("posts:profile_unfollow", kwargs={"username": cls.user.username}),
-            "posts/profile.html"
-            )
+            reverse(
+                "posts:profile_unfollow",
+                kwargs={"username": cls.user.username},
+            ),
+            "posts/profile.html",
+        )
         cls.paginated_urls = (cls.index_url, cls.group_url, cls.profile_url)
 
     @classmethod
@@ -105,23 +114,13 @@ class TaskPagesTests(TestCase):
 
     def setUp(self):
         cache.clear()
-        # Создаем неавторизованного пользователя
         self.guest_client = Client()
-        # Создаем авторизованного пользователя
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
-        # Создаем пользователя фолловера
         self.user_2 = User.objects.create_user(username="Follower")
         self.follow_client = Client()
         self.follow_client.force_login(self.user_2)
 
-
-
-
-
-
-
-####################    НАЧАЛО ТЕСТИРОВАНИЯ     #####################
     def test_pages_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
         templates_pages_names = {
@@ -225,7 +224,8 @@ class TaskPagesTests(TestCase):
                 self.assertIsInstance(form_field, expected)
 
     def test_image_correct_in_context(self):
-        """Шаблоны главной, профайла, группы и поста сформированы с картинкой в контексте."""
+        """Шаблоны главной, профайла, группы и поста
+        сформированы с картинкой в контексте."""
         tests_pages = {
             self.index_url,
             self.group_url,
@@ -233,7 +233,7 @@ class TaskPagesTests(TestCase):
         }
         for k in tests_pages:
             response = self.authorized_client.get(k[0])
-            test_object = response.context['page_obj'][0]
+            test_object = response.context["page_obj"][0]
             post_text = test_object.text
             post_group_title = test_object.group.title
             post_author_username = test_object.author.username
@@ -275,40 +275,63 @@ class TaskPagesTests(TestCase):
 
     def test_follow_unfollow(self):
         """Проверка корректной работы фоллоу и анфоллоу"""
-        response_followed = self.follow_client.get(reverse("posts:follow_index"))
+        response_followed = self.follow_client.get(
+            reverse("posts:follow_index")
+        )
         self.assertEqual(len(response_followed.context["page_obj"]), 0)
-        response_follow = self.follow_client.get(reverse("posts:profile_follow", kwargs={"username": self.user.username}))
-        response_followed = self.follow_client.get(reverse("posts:follow_index"))
+        self.follow_client.get(
+            reverse(
+                "posts:profile_follow", kwargs={"username": self.user.username}
+            )
+        )
+        response_followed = self.follow_client.get(
+            reverse("posts:follow_index")
+        )
         self.assertEqual(len(response_followed.context["page_obj"]), 10)
-        response_unfollow = self.follow_client.get(reverse("posts:profile_unfollow", kwargs={"username": self.user.username}))
-        response_followed = self.follow_client.get(reverse("posts:follow_index"))
+        self.follow_client.get(
+            reverse(
+                "posts:profile_unfollow",
+                kwargs={"username": self.user.username},
+            )
+        )
+        response_followed = self.follow_client.get(
+            reverse("posts:follow_index")
+        )
         self.assertEqual(len(response_followed.context["page_obj"]), 0)
 
     def test_follow_index_page(self):
-        """Проверка корректной работы ленты фолловера и обычного пользователя"""
-        response_followed = self.follow_client.get(reverse("posts:follow_index"))
+        """Проверка корректной работы ленты фолловера
+        и обычного пользователя"""
+        response_followed = self.follow_client.get(
+            reverse("posts:follow_index")
+        )
         self.assertEqual(len(response_followed.context["page_obj"]), 0)
-        response_follow = self.follow_client.get(reverse("posts:profile_follow", kwargs={"username": self.user.username}))
-        small_gif = (            
-             b'\x47\x49\x46\x38\x39\x61\x02\x00'
-             b'\x01\x00\x80\x00\x00\x00\x00\x00'
-             b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-             b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-             b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-             b'\x0A\x00\x3B'
+        self.follow_client.get(
+            reverse(
+                "posts:profile_follow", kwargs={"username": self.user.username}
+            )
+        )
+        small_gif = (
+            b"\x47\x49\x46\x38\x39\x61\x02\x00"
+            b"\x01\x00\x80\x00\x00\x00\x00\x00"
+            b"\xFF\xFF\xFF\x21\xF9\x04\x00\x00"
+            b"\x00\x00\x00\x2C\x00\x00\x00\x00"
+            b"\x02\x00\x01\x00\x00\x02\x02\x0C"
+            b"\x0A\x00\x3B"
         )
         self.post_3 = Post.objects.create(
-                    author=self.user,
-                    text=f"Тестовое обращение автора к подписчикам",
-                    group=self.group,
-                    image=SimpleUploadedFile(
-                        name=f'small_uni_3.gif',
-                        content=small_gif,
-                        content_type='image/gif',
-                    ))
+            author=self.user,
+            text="Тестовое обращение автора к подписчикам",
+            group=self.group,
+            image=SimpleUploadedFile(
+                name="small_uni_3.gif",
+                content=small_gif,
+                content_type="image/gif",
+            ),
+        )
 
         response = self.follow_client.get(reverse("posts:follow_index")[0])
-        test_object = response.context['page_obj'][0]
+        test_object = response.context["page_obj"][0]
         post_text = test_object.text
         post_group_title = test_object.group.title
         post_author_username = test_object.author.username
@@ -317,5 +340,7 @@ class TaskPagesTests(TestCase):
         self.assertEqual(post_group_title, "Тестовая группа")
         self.assertEqual(post_author_username, "auth")
         self.assertEqual(post_image, "posts/small_uni_3.gif")
-        response_another_follower = self.authorized_client.get(reverse("posts:follow_index"))
+        response_another_follower = self.authorized_client.get(
+            reverse("posts:follow_index")
+        )
         self.assertEqual(len(response_another_follower.context["page_obj"]), 0)

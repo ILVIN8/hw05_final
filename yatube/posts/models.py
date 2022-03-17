@@ -16,7 +16,7 @@ class Group(models.Model):
 class Post(models.Model):
     text = models.TextField("Текст поста", help_text="Введите текст поста")
     pub_date = models.DateTimeField(
-        'Дата публикации',
+        "Дата публикации",
         auto_now_add=True,
         db_index=True,
     )
@@ -35,18 +35,14 @@ class Post(models.Model):
         verbose_name="Группа",
         help_text="Группа, к которой будет относиться пост",
     )
-    image = models.ImageField(
-        'Картинка',
-        upload_to='posts/',
-        blank=True
-    )
-
+    image = models.ImageField("Картинка", upload_to="posts/", blank=True)
 
     def __str__(self) -> str:
         return self.text
 
     class Meta:
         ordering = ["-pub_date"]
+
 
 class Comment(models.Model):
     post = models.ForeignKey(
@@ -61,15 +57,18 @@ class Comment(models.Model):
         related_name="comments",
         verbose_name="Автор",
     )
-    text = models.TextField("Текст комментария", help_text="Введите текст комментария")
+    text = models.TextField(
+        "Текст комментария", help_text="Введите текст комментария"
+    )
     created = models.DateTimeField(
-        'Дата комментария',
+        "Дата комментария",
         auto_now_add=True,
         db_index=True,
     )
 
     def __str__(self) -> str:
         return self.text
+
 
 class Follow(models.Model):
     user = models.ForeignKey(
