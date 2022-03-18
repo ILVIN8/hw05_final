@@ -64,7 +64,7 @@ def post_detail(request, post_id):
     template = "posts/post_detail.html"
     post = Post.objects.get(id=post_id)
     group = post.group
-    title = post.text[0:29]
+    title = post.text[:29]
     post_count = Post.objects.filter(author=post.author).count()
     comments = Comment.objects.filter(post_id=post_id)
     form = CommentForm(
@@ -125,7 +125,7 @@ def post_edit(request, post_id):
 
 @login_required
 def add_comment(request, post_id):
-    post = Post.objects.get(pk=post_id)
+    post = get_object_or_404(Post, pk=post_id)
     form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
@@ -139,10 +139,13 @@ def add_comment(request, post_id):
 def follow_index(request):
     template = "posts/follow.html"
     user = request.user
-    blogers_id = Follow.objects.filter(user=user).values_list(
-        "author_id", flat=True
+    bloggers_id = (
+        Follow.objects.select_related("author_id")
+        .filter(user=user)
+        .values_list("author_id", flat=True)
     )
-    post_list = Post.objects.filter(author_id__in=blogers_id)
+
+    post_list = Post.objects.filter(author_id__in=bloggers_id)
     paginator = Paginator(post_list, NUMBER_OF_POSTS)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)

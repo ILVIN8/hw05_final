@@ -122,7 +122,7 @@ class PostCreateFormTests(TestCase):
         add_comment_url = reverse("posts:add_comment", kwargs={"post_id": 1})
         self.assertRedirects(
             response,
-            f'{login_url}?next={add_comment_url}',
+            f"{login_url}?next={add_comment_url}",
             status_code=302,
         )
         self.assertEqual(Comment.objects.count(), comment_count)
